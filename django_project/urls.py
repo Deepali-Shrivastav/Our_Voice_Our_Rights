@@ -21,5 +21,5 @@ from dashboard import views as dashboard_views
 urlpatterns = [
     path('', dashboard_views.index, name='home'),
     path('api/cache', dashboard_views.api_cache, name='api_cache'),
-    # admin left out for demo
+    path('favicon.ico', dashboard_views.favicon, name='favicon'),
 ]

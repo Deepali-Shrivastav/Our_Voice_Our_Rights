@@ -62,12 +62,20 @@
 
   <script>
     function speak(text, lang='hi-IN'){
+      if(!('speechSynthesis' in window)){
+        return;
+      }
       try{
         const u = new SpeechSynthesisUtterance(text);
         u.lang = lang;
+        u.onerror = function(event){
+          console.warn('Speech synthesis error ignored');
+        };
         speechSynthesis.cancel();
         speechSynthesis.speak(u);
-      }catch(e){ console.log('TTS err', e) }
+      }catch(e){ 
+        console.warn('Speech synthesis not available');
+      }
     }
 
     async function loadCache(){

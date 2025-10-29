@@ -25,10 +25,14 @@ SECRET_KEY = 'django-insecure-4ju2n@$f9d0c=h)_g0lbb%k9&@rf(xa$d$g$&5ri$uf)*gev^4
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = os.environ["REPLIT_DOMAINS"].split(',')
-CSRF_TRUSTED_ORIGINS = [
-    "https://" + domain for domain in os.environ["REPLIT_DOMAINS"].split(',')
-]
+ALLOWED_HOSTS = []
+CSRF_TRUSTED_ORIGINS = []
+
+if 'REPLIT_DOMAINS' in os.environ:
+    ALLOWED_HOSTS = os.environ['REPLIT_DOMAINS'].split(',')
+    CSRF_TRUSTED_ORIGINS = ['https://' + domain for domain in os.environ['REPLIT_DOMAINS'].split(',')]
+else:
+    ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -39,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'dashboard',
 ]
 
 MIDDLEWARE = [
@@ -112,7 +117,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -121,7 +126,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+# Static files configuration
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>हमारी आवाज़ — MGNREGA (Maharashtra)</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:0;padding:0;background:#f7f7f7;color:#222}
+    header{background:#0a62a7;color:#fff;padding:14px 16px;text-align:center}
+    .container{padding:12px}
+    .big-btn{display:block;width:100%;padding:14px;margin:10px 0;border-radius:10px;border:none;font-size:18px}
+    .loc-btn{background:#ffb703;color:#111}
+    .card{background:#fff;padding:14px;border-radius:10px;margin:10px 0;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+    .kpi{display:flex;align-items:center;justify-content:space-between}
+    .kpi .left{font-size:16px}
+    .kpi .value{font-size:28px;font-weight:700}
+    .green{color:green}.amber{color:#d48806}.red{color:red}
+    .small{font-size:12px;color:#555}
+    footer{padding:12px;text-align:center;font-size:13px;color:#666}
+    .row{display:flex;gap:8px}
+    button.icon{border:none;background:transparent;font-size:18px}
+  </style>
+</head>
+<body>
+  <header>
+    <div style="font-size:18px">हमारी आवाज़ — MGNREGA (Maharashtra)</div>
+    <div style="font-size:12px">सरल, हिंदी और आवाज़ मदद</div>
+  </header>
+
+  <div class="container">
+    <button class="big-btn loc-btn" id="useLocation">📍 मेरी जगह पहचानो</button>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div id="districtName" style="font-size:18px;font-weight:700">मुंबई</div>
+          <div id="lastUpdated" class="small">Last: —</div>
+        </div>
+        <div>
+          <button class="icon" id="speakBtn" title="सुनिए">🔊</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="kpis"></div>
+
+    <div class="card">
+      <div style="font-weight:700">माह-दर-माह रुझान</div>
+      <div id="timeseries" class="small">(कार्ड टैप कर इतिहास देखें)</div>
+    </div>
+  </div>
+
+  <footer>
+    <span id="ownerName">हमारी आवाज़, हमारे अधिकार</span> — MGNREGA डेटा महाराष्ट्र के लिए
+  </footer>
+
+  <script>
+    function speak(text, lang='hi-IN'){
+      try{
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = lang;
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      }catch(e){ console.log('TTS err', e) }
+    }
+
+    async function loadCache(){
+      const r = await fetch('/api/cache');
+      if(!r.ok) throw new Error('no cache');
+      return r.json();
+    }
+
+    function renderKPIs(did, cache){
+      const ddata = cache.data[did];
+      if(!ddata) return;
+      const districtObj = cache.districts.find(d=>d.district_id===did);
+      document.getElementById('districtName').innerText = districtObj ? districtObj.name_hi : did;
+      document.getElementById('lastUpdated').innerText = 'महीना: ' + ddata.latest_month;
+      const kpis = [
+        {label:'रोज़गार (पिछला माह)', key:'employment_provided', emoji:'👷'},
+        {label:'समय पर भुगतान (%)', key:'payments_on_time', emoji:'💸'},
+        {label:'औसत देरी (दिन)', key:'avg_payment_delay_days', emoji:'⏳'},
+        {label:'सक्रिय प्रोजेक्ट', key:'active_projects', emoji:'🏗️'},
+        {label:'शिकायतें खुली', key:'grievances_open', emoji:'📣'}
+      ];
+      const container = document.getElementById('kpis');
+      container.innerHTML = '';
+      kpis.forEach(k=>{
+        const val = ddata[k.key];
+        const card = document.createElement('div'); card.className='card';
+        const html = `<div class="kpi">
+          <div class="left">${k.emoji} ${k.label}<div class="small">${k.key}</div></div>
+          <div class="value">${val}</div>
+        </div>`;
+        card.innerHTML = html;
+        card.onclick = ()=> showTimeseries(ddata.timeseries);
+        container.appendChild(card);
+      });
+
+      document.getElementById('speakBtn').onclick = ()=> {
+        const txt = `${districtObj.name_hi} के लिए, ${ddata.employment_provided} व्यक्तियों को रोजगार दिया गया। भुगतान समय पर: ${ddata.payments_on_time} प्रतिशत। औसत देरी ${ddata.avg_payment_delay_days} दिन।`;
+        speak(txt);
+      };
+    }
+
+    function showTimeseries(series){
+      const el = document.getElementById('timeseries');
+      el.innerHTML = '';
+      series.slice(0,6).forEach(s=>{
+        const div = document.createElement('div');
+        div.className='card';
+        div.innerHTML = `<div style="font-weight:700">${s.month}</div>
+          <div class="small">रोज़गार: ${s.employment}</div>
+          <div class="small">समय पर भुगतान: ${s.payments_on_time}%</div>
+          <div class="small">मासिक देरी: ${s.delay} दिन</div>`;
+        el.appendChild(div);
+      })
+    }
+
+    function nearestDistrict(lat, lon, cache){
+      let best = null; let bestDist = 1e9;
+      cache.districts.forEach(d=>{
+        const [dl, dlng] = d.centroid;
+        const dx = dl - lat; const dy = dlng - lon;
+        const dist = dx*dx + dy*dy;
+        if(dist < bestDist){ bestDist = dist; best = d }
+      });
+      return best ? best.district_id : cache.districts[0].district_id;
+    }
+
+    (async function(){
+      let cache = null;
+      try{ cache = await loadCache(); } catch(e){ console.error('cache load failed', e); alert('डेटा लोड नहीं हो सका'); return; }
+      let selected = 'pune';
+      renderKPIs(selected, cache);
+
+      document.getElementById('useLocation').onclick = ()=>{
+        if(!navigator.geolocation){ alert('स्थान उपलब्ध नहीं'); return; }
+        navigator.geolocation.getCurrentPosition(pos=>{
+          const lat = pos.coords.latitude, lon = pos.coords.longitude;
+          const nearest = nearestDistrict(lat, lon, cache);
+          renderKPIs(nearest, cache);
+        }, err=>{
+          alert('स्थान की अनुमति नहीं मिली या त्रुटि'); console.log(err);
+        }, {timeout:8000});
+      }
+    })();
+  </script>
+</body>
+</html>

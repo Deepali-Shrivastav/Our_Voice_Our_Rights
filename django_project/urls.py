@@ -16,7 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from dashboard import views as dashboard_views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('', dashboard_views.index, name='home'),
+    path('api/cache', dashboard_views.api_cache, name='api_cache'),
+    # admin left out for demo
 ]

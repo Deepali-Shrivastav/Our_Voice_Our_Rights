@@ -19,6 +19,7 @@
     footer{padding:12px;text-align:center;font-size:13px;color:#666}
     .row{display:flex;gap:8px}
     button.icon{border:none;background:transparent;font-size:18px}
+    select{width:100%;padding:14px;font-size:16px;border-radius:8px;border:2px solid #0a62a7;margin:10px 0;background:#fff}
   </style>
 </head>
 <body>
@@ -29,6 +30,12 @@
 
   <div class="container">
     <button class="big-btn loc-btn" id="useLocation">📍 मेरी जगह पहचानो</button>
+    
+    <div class="card">
+      <label for="districtSelect" style="font-weight:700;display:block;margin-bottom:8px">जिला चुनें / Select District:</label>
+      <select id="districtSelect"></select>
+    </div>
+    
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div>
@@ -130,14 +137,31 @@
     (async function(){
       let cache = null;
       try{ cache = await loadCache(); } catch(e){ console.error('cache load failed', e); alert('डेटा लोड नहीं हो सका'); return; }
+      
+      const select = document.getElementById('districtSelect');
+      cache.districts.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.district_id;
+        opt.textContent = `${d.name_hi} (${d.name_en})`;
+        select.appendChild(opt);
+      });
+      
       let selected = 'pune';
+      select.value = selected;
       renderKPIs(selected, cache);
+
+      select.onchange = () => {
+        selected = select.value;
+        renderKPIs(selected, cache);
+      };
 
       document.getElementById('useLocation').onclick = ()=>{
         if(!navigator.geolocation){ alert('स्थान उपलब्ध नहीं'); return; }
         navigator.geolocation.getCurrentPosition(pos=>{
           const lat = pos.coords.latitude, lon = pos.coords.longitude;
           const nearest = nearestDistrict(lat, lon, cache);
+          selected = nearest;
+          select.value = nearest;
           renderKPIs(nearest, cache);
         }, err=>{
           alert('स्थान की अनुमति नहीं मिली या त्रुटि'); console.log(err);

@@ -173,9 +173,9 @@
           renderKPIs(nearest, cache);
         }, err=>{
           alert('स्थान की अनुमति नहीं मिली या त्रुटि'); console.log(err);
-        }, {timeout:8000});
+        }, {enableHighAccuracy:true, timeout:15000, maximumAge:0});
       }
     })();
   </script>
 </body>
-</html>
+</html> 

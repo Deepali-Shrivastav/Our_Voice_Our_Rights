@@ -28,10 +28,6 @@ if not SECRET_KEY:
 ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = []
 
-if 'REPLIT_DOMAINS' in os.environ:
-    domains = os.environ['REPLIT_DOMAINS'].split(',')
-    CSRF_TRUSTED_ORIGINS = ['https://' + domain for domain in domains]
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -53,10 +49,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
 ]
 
-# Only use clickjacking protection in deployments because the Development Web View uses
-# iframes and needs to be a cross origin.
-if ("REPLIT_DEPLOYMENT" in os.environ):
-    MIDDLEWARE.append('django.middleware.clickjacking.XFrameOptionsMiddleware')
+# Clickjacking protection middleware can be enabled for deployments as needed.
 
 ROOT_URLCONF = 'django_project.urls'
 

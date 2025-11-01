@@ -49,8 +49,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
 ]
 
-# Clickjacking protection middleware can be enabled for deployments as needed.
-
 ROOT_URLCONF = 'django_project.urls'
 
 TEMPLATES = [
@@ -119,11 +117,11 @@ USE_TZ = True
 
 # Static files configuration
 STATIC_URL = '/static/'
+
+# Directories where Django will look for additional static files
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
+# The directory where static files will be collected to when running `collectstatic`
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

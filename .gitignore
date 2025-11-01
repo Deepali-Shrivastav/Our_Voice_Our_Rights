@@ -3,6 +3,13 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+staticfiles/
+*.pyc
+__pycache__/
+db.sqlite3
+.env
+
+
 # C extensions
 *.so
 

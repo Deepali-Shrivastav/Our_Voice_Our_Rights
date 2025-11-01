@@ -23,14 +23,17 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-# Allowed hosts
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')
+ALLOWED_HOSTS = [
+    "our-voice-our-rights-m2ut.onrender.com",
+    "localhost",
+    "127.0.0.1",
+]
 
-# Trusted origins for CSRF
-CSRF_TRUSTED_ORIGINS = config(
-    'CSRF_TRUSTED_ORIGINS',
-    default='http://localhost,http://127.0.0.1'
-).split(',')
+CSRF_TRUSTED_ORIGINS = [
+    "https://our-voice-our-rights-m2ut.onrender.com",
+    "http://localhost",
+    "http://127.0.0.1",
+]
 
 
 # Application definition
